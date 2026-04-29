@@ -1,14 +1,36 @@
-function generateCode() {
+const API_URL = "https://orbis-api.jsifta52.workers.dev";
+
+async function generateCode() {
     const input = document.getElementById("input").value;
 
     if (!input) {
-        alert("Please enter a link");
+        alert("Zadej URL");
         return;
     }
 
-    // jednoduchý fake kód (zatím bez backendu)
-    const code = Math.floor(100000 + Math.random() * 900000);
+    try {
+        const res = await fetch(API_URL + "/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                url: input
+            })
+        });
 
-    document.getElementById("result").innerHTML =
-        "Your code: <br><span style='font-size:32px'>" + code + "</span>";
+        const data = await res.json();
+
+        if (data.code) {
+            document.getElementById("result").innerHTML =
+                "✔ CODE: <br><b style='font-size:32px'>" + data.code + "</b>";
+        } else {
+            document.getElementById("result").innerText =
+                "Error: " + JSON.stringify(data);
+        }
+
+    } catch (err) {
+        document.getElementById("result").innerText =
+            "Network error";
+    }
 }
