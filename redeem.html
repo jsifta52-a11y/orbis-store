@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Orbis Redeem</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0d1117;
+      color: white;
+      text-align: center;
+      padding-top: 80px;
+    }
+
+    input {
+      padding: 10px;
+      width: 200px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Redeem Code</h1>
+
+<input id="code" placeholder="Zadej kód">
+<br>
+<button onclick="redeem()">Redeem</button>
+
+<div id="result"></div>
+
+<script>
+const API = "https://orbis-api.jsifta52.workers.dev";
+
+async function redeem() {
+  const code = document.getElementById("code").value;
+  const result = document.getElementById("result");
+
+  result.innerHTML = "Načítám...";
+
+  try {
+    const res = await fetch(API + "/redeem", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ code })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      result.innerHTML = `
+        <p>✔ Hotovo</p>
+        <a href="${data.url}" target="_blank">${data.url}</a>
+      `;
+    } else {
+      result.innerHTML = "❌ " + data.error;
+    }
+
+  } catch (e) {
+    result.innerHTML = "Network error: " + e.message;
+  }
+}
+</script>
+
+</body>
+</html>
