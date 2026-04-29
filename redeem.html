@@ -1,76 +1,125 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>Orbis Redeem</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #0d1117;
-      color: white;
-      text-align: center;
-      padding-top: 80px;
-    }
+<meta charset="UTF-8">
+<title>Orbis Generator</title>
 
-    input {
-      padding: 10px;
-      width: 200px;
-      font-size: 16px;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0a1a2f; /* PS4 tmavě modrá */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
+/* hlavní box */
+.card {
+  background: #0f2a4a;
+  padding: 30px;
+  border-radius: 14px;
+  width: 380px;
+  box-shadow: 0 0 25px rgba(0, 100, 255, 0.25);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  text-align: center;
+}
 
-    #result {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-  </style>
+/* nadpis */
+h1 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #4aa3ff;
+  letter-spacing: 1px;
+}
+
+/* input */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #2c6fb2;
+  background: #0a1a2f;
+  color: white;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+/* tlačítko */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #1f6feb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #388bfd;
+}
+
+/* výsledek */
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  background: #0a1a2f;
+  border: 1px solid #2c6fb2;
+  border-radius: 8px;
+  word-break: break-all;
+  color: #4aa3ff;
+  font-weight: bold;
+}
+
+/* malý glow efekt */
+.glow {
+  text-shadow: 0 0 8px rgba(74,163,255,0.6);
+}
+</style>
 </head>
+
 <body>
 
-<h1>Redeem Code</h1>
+<div class="card">
+  <h1 class="glow">ORBIS CODE GENERATOR</h1>
 
-<input id="code" placeholder="Zadej kód">
-<br>
-<button onclick="redeem()">Redeem</button>
+  <input id="input" placeholder="Zadej PKG / GitHub URL">
+  <button onclick="generate()">GENERATE</button>
 
-<div id="result"></div>
+  <div class="result" id="result">Waiting...</div>
+</div>
 
 <script>
 const API = "https://orbis-api.jsifta52.workers.dev";
 
-async function redeem() {
-  const code = document.getElementById("code").value;
+async function generate() {
+  const url = document.getElementById("input").value;
   const result = document.getElementById("result");
 
-  result.innerHTML = "Načítám...";
+  result.innerHTML = "Generating...";
 
   try {
-    const res = await fetch(API + "/redeem", {
+    const res = await fetch(API + "/create", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ code })
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({url})
     });
 
     const data = await res.json();
 
     if (data.success) {
-      result.innerHTML = `
-        <p>✔ Hotovo</p>
-        <a href="${data.url}" target="_blank">${data.url}</a>
-      `;
+      result.innerHTML = "CODE: " + data.code;
     } else {
-      result.innerHTML = "❌ " + data.error;
+      result.innerHTML = "ERROR: " + data.error;
     }
 
   } catch (e) {
-    result.innerHTML = "Network error: " + e.message;
+    result.innerHTML = "NETWORK ERROR";
   }
 }
 </script>
