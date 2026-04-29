@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Orbis Redeem</title>
@@ -11,12 +11,36 @@ body {
   background: #0a1a2f;
   color: white;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
 }
 
+/* TOP BAR */
+.topbar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px;
+  background: #0f2a4a;
+  border-bottom: 1px solid #2c6fb2;
+  width: 100%;
+}
+
+.tab {
+  padding: 10px 16px;
+  background: #1f6feb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tab:hover {
+  background: #388bfd;
+}
+
+/* CARD */
 .card {
+  margin-top: 80px;
   background: #0f2a4a;
   padding: 30px;
   border-radius: 14px;
@@ -70,18 +94,79 @@ button:hover {
   word-break: break-all;
   color: #4aa3ff;
 }
+
+/* FOOTER ICONS */
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.icon {
+  width: 42px;
+  height: 42px;
+  background: #0f2a4a;
+  border: 1px solid #2c6fb2;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.icon:hover {
+  background: #1f6feb;
+}
+
+.icon img {
+  width: 20px;
+  height: 20px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- TOP MENU -->
+<div class="topbar">
+  <div class="tab" onclick="location.href='index.html'">Generator</div>
+  <div class="tab">Redeem</div>
+  <div class="tab" onclick="window.open('https://github.com')">GitHub</div>
+  <div class="tab">Info</div>
+</div>
+
+<!-- MAIN CARD -->
 <div class="card">
   <h1>REDEEM CODE</h1>
 
-  <input id="code" placeholder="Zadej kód">
+  <input id="code" placeholder="Enter code">
   <button onclick="redeem()">REDEEM</button>
 
   <div class="result" id="result">Waiting...</div>
+</div>
+
+<!-- FOOTER ICONS -->
+<div class="footer">
+
+  <a class="icon" href="https://twitter.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/x/ffffff" alt="X">
+  </a>
+
+  <a class="icon" href="https://discord.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/discord/ffffff" alt="Discord">
+  </a>
+
+  <a class="icon" href="https://github.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub">
+  </a>
+
+  <a class="icon" href="#">
+    <img src="https://cdn.simpleicons.org/info/ffffff" alt="Info">
+  </a>
+
 </div>
 
 <script>
