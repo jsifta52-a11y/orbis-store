@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Orbis Generator</title>
@@ -7,99 +7,143 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0a1a2f; /* PS4 tmavě modrá */
+  font-family: Arial;
+  background: #0a1a2f;
   color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
 }
 
-/* hlavní box */
+.topbar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px;
+  background: #0f2a4a;
+  border-bottom: 1px solid #2c6fb2;
+}
+
+.tab {
+  padding: 10px 16px;
+  background: #1f6feb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .card {
   background: #0f2a4a;
   padding: 30px;
   border-radius: 14px;
   width: 380px;
-  box-shadow: 0 0 25px rgba(0, 100, 255, 0.25);
-  border: 1px solid rgba(0, 150, 255, 0.3);
+  margin: 80px auto;
   text-align: center;
+  border: 1px solid #2c6fb2;
 }
 
-/* nadpis */
-h1 {
-  font-size: 22px;
-  margin-bottom: 20px;
-  color: #4aa3ff;
-  letter-spacing: 1px;
-}
-
-/* input */
-input {
+input, button {
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #2c6fb2;
-  background: #0a1a2f;
-  color: white;
-  outline: none;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-/* tlačítko */
-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  background: #1f6feb;
+input {
+  background: #0a1a2f;
+  border: 1px solid #2c6fb2;
   color: white;
-  font-size: 16px;
+}
+
+button {
+  background: #1f6feb;
+  border: none;
+  color: white;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 button:hover {
   background: #388bfd;
 }
 
-/* výsledek */
 .result {
-  margin-top: 20px;
-  padding: 15px;
-  background: #0a1a2f;
-  border: 1px solid #2c6fb2;
-  border-radius: 8px;
-  word-break: break-all;
+  margin-top: 10px;
   color: #4aa3ff;
-  font-weight: bold;
 }
 
-/* malý glow efekt */
-.glow {
-  text-shadow: 0 0 8px rgba(74,163,255,0.6);
+/* FOOTER */
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.icon {
+  width: 42px;
+  height: 42px;
+  background: #0f2a4a;
+  border: 1px solid #2c6fb2;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.icon:hover {
+  background: #1f6feb;
+}
+
+.icon img {
+  width: 20px;
+  height: 20px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h1 class="glow">ORBIS CODE GENERATOR</h1>
+<div class="topbar">
+  <div class="tab">Generator</div>
+  <div class="tab" onclick="location.href='redeem.html'">Redeem</div>
+  <div class="tab" onclick="window.open('https://github.com')">GitHub</div>
+  <div class="tab">Info</div>
+</div>
 
-  <input id="input" placeholder="Zadej PKG / GitHub URL">
-  <button onclick="generate()">GENERATE</button>
+<div class="card">
+  <h2>Code Generator</h2>
+
+  <input id="url" placeholder="Enter URL">
+  <button onclick="generate()">Generate</button>
 
   <div class="result" id="result">Waiting...</div>
+</div>
+
+<!-- SOCIAL ICONS -->
+<div class="footer">
+
+  <a class="icon" href="https://twitter.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/x/ffffff" alt="X">
+  </a>
+
+  <a class="icon" href="https://discord.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/discord/ffffff" alt="Discord">
+  </a>
+
+  <a class="icon" href="https://github.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub">
+  </a>
+
+  <a class="icon" href="#">
+    <img src="https://cdn.simpleicons.org/info/ffffff" alt="Info">
+  </a>
+
 </div>
 
 <script>
 const API = "https://orbis-api.jsifta52.workers.dev";
 
 async function generate() {
-  const url = document.getElementById("input").value;
+  const url = document.getElementById("url").value;
   const result = document.getElementById("result");
 
   result.innerHTML = "Generating...";
