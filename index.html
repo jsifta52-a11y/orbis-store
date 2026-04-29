@@ -114,13 +114,12 @@ button:hover {
 
   <input id="url" placeholder="Enter URL">
 
-  <!-- 🔥 DŮLEŽITÉ: TYPE SELECT -->
   <select id="type">
     <option value="free">Free (24h)</option>
-    <option value="premium">Premium (5 months)</option>
+    <option value="premium">Premium (Watch Ads)</option>
   </select>
 
-  <button onclick="generate()">Generate</button>
+  <button id="mainBtn" onclick="handleAction()">Generate</button>
 
   <div class="result" id="result">Waiting...</div>
 </div>
@@ -149,9 +148,47 @@ button:hover {
 <script>
 const API = "https://orbis-api.jsifta52.workers.dev";
 
-async function generate() {
-  const url = document.getElementById("url").value;
+let adsWatched = 0;
+
+function resetAds() {
+  adsWatched = 0;
+  document.getElementById("mainBtn").innerText = "Generate";
+}
+
+document.getElementById("type").addEventListener("change", resetAds);
+
+async function handleAction() {
   const type = document.getElementById("type").value;
+
+  if (type === "premium") {
+    return watchAds();
+  }
+
+  return generate("free");
+}
+
+function watchAds() {
+  const btn = document.getElementById("mainBtn");
+  const result = document.getElementById("result");
+
+  adsWatched++;
+
+  result.innerText = `Watching ads ${adsWatched}/2`;
+  btn.innerText = `Watch Ads (${adsWatched}/2)`;
+
+  if (adsWatched >= 2) {
+    btn.innerText = "Generating...";
+
+    setTimeout(() => {
+      adsWatched = 0;
+      btn.innerText = "Generate";
+      generate("premium");
+    }, 800);
+  }
+}
+
+async function generate(type) {
+  const url = document.getElementById("url").value;
   const result = document.getElementById("result");
 
   result.innerHTML = "Generating...";
@@ -160,10 +197,7 @@ async function generate() {
     const res = await fetch(API + "/create", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        url: url,
-        type: type
-      })
+      body: JSON.stringify({ url, type })
     });
 
     const data = await res.json();
@@ -181,4 +215,5 @@ async function generate() {
 </script>
 
 </body>
+</html>
 </html>
