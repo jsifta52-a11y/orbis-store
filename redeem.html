@@ -2,13 +2,13 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>Orbis Generator</title>
+<title>Orbis Redeem</title>
 
 <style>
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #0a1a2f; /* PS4 tmavě modrá */
+  background: #0a1a2f;
   color: white;
   display: flex;
   justify-content: center;
@@ -16,7 +16,6 @@ body {
   height: 100vh;
 }
 
-/* hlavní box */
 .card {
   background: #0f2a4a;
   padding: 30px;
@@ -27,7 +26,6 @@ body {
   text-align: center;
 }
 
-/* nadpis */
 h1 {
   font-size: 22px;
   margin-bottom: 20px;
@@ -35,9 +33,9 @@ h1 {
   letter-spacing: 1px;
 }
 
-/* input */
 input {
   width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #2c6fb2;
@@ -47,7 +45,6 @@ input {
   margin-bottom: 12px;
 }
 
-/* tlačítko */
 button {
   width: 100%;
   padding: 12px;
@@ -64,7 +61,6 @@ button:hover {
   background: #388bfd;
 }
 
-/* výsledek */
 .result {
   margin-top: 20px;
   padding: 15px;
@@ -73,12 +69,6 @@ button:hover {
   border-radius: 8px;
   word-break: break-all;
   color: #4aa3ff;
-  font-weight: bold;
-}
-
-/* malý glow efekt */
-.glow {
-  text-shadow: 0 0 8px rgba(74,163,255,0.6);
 }
 </style>
 </head>
@@ -86,10 +76,10 @@ button:hover {
 <body>
 
 <div class="card">
-  <h1 class="glow">ORBIS CODE GENERATOR</h1>
+  <h1>REDEEM CODE</h1>
 
-  <input id="input" placeholder="Zadej PKG / GitHub URL">
-  <button onclick="generate()">GENERATE</button>
+  <input id="code" placeholder="Zadej kód">
+  <button onclick="redeem()">REDEEM</button>
 
   <div class="result" id="result">Waiting...</div>
 </div>
@@ -97,23 +87,23 @@ button:hover {
 <script>
 const API = "https://orbis-api.jsifta52.workers.dev";
 
-async function generate() {
-  const url = document.getElementById("input").value;
+async function redeem() {
+  const code = document.getElementById("code").value;
   const result = document.getElementById("result");
 
-  result.innerHTML = "Generating...";
+  result.innerHTML = "Loading...";
 
   try {
-    const res = await fetch(API + "/create", {
+    const res = await fetch(API + "/redeem", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({url})
+      body: JSON.stringify({code})
     });
 
     const data = await res.json();
 
     if (data.success) {
-      result.innerHTML = "CODE: " + data.code;
+      result.innerHTML = "URL: " + data.url;
     } else {
       result.innerHTML = "ERROR: " + data.error;
     }
