@@ -38,7 +38,7 @@ body {
   border: 1px solid #2c6fb2;
 }
 
-input, button {
+input, select, button {
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
@@ -46,7 +46,7 @@ input, button {
   margin-bottom: 10px;
 }
 
-input {
+input, select {
   background: #0a1a2f;
   border: 1px solid #2c6fb2;
   color: white;
@@ -113,6 +113,13 @@ button:hover {
   <h2>Code Generator</h2>
 
   <input id="url" placeholder="Enter URL">
+
+  <!-- 🔥 DŮLEŽITÉ: TYPE SELECT -->
+  <select id="type">
+    <option value="free">Free (24h)</option>
+    <option value="premium">Premium (5 months)</option>
+  </select>
+
   <button onclick="generate()">Generate</button>
 
   <div class="result" id="result">Waiting...</div>
@@ -144,6 +151,7 @@ const API = "https://orbis-api.jsifta52.workers.dev";
 
 async function generate() {
   const url = document.getElementById("url").value;
+  const type = document.getElementById("type").value;
   const result = document.getElementById("result");
 
   result.innerHTML = "Generating...";
@@ -152,7 +160,10 @@ async function generate() {
     const res = await fetch(API + "/create", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({url})
+      body: JSON.stringify({
+        url: url,
+        type: type
+      })
     });
 
     const data = await res.json();
