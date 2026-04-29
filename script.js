@@ -1,15 +1,18 @@
 const API_URL = "https://orbis-api.jsifta52.workers.dev";
 
 async function generateCode() {
-    const input = document.getElementById("input").value;
+    const input = document.getElementById("input").value.trim();
 
     if (!input) {
-        alert("Zadej URL");
+        alert("Zadej URL.");
         return;
     }
 
+    const result = document.getElementById("result");
+    result.innerHTML = "Generuji kód...";
+
     try {
-        const res = await fetch(API_URL + "/create", {
+        const response = await fetch(`${API_URL}/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -19,18 +22,19 @@ async function generateCode() {
             })
         });
 
-        const data = await res.json();
+        const data = await response.json();
 
-        if (data.code) {
-            document.getElementById("result").innerHTML =
-                "✔ CODE: <br><b style='font-size:32px'>" + data.code + "</b>";
+        if (data.success) {
+            result.innerHTML = `
+                <div style="font-size: 32px; font-weight: bold;">
+                    ${data.code}
+                </div>
+            `;
         } else {
-            document.getElementById("result").innerText =
-                "Error: " + JSON.stringify(data);
+            result.textContent = data.error || "Neznámá chyba.";
         }
-
-    } catch (err) {
-        document.getElementById("result").innerText =
-            "Network error";
+    } catch (error) {
+        console.error(error);
+        result.textContent = "Network Error: " + error.message;
     }
 }
