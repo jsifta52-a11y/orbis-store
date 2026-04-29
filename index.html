@@ -1,23 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbis Store</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Orbis Generator</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0a1a2f; /* PS4 tmavě modrá */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* hlavní box */
+.card {
+  background: #0f2a4a;
+  padding: 30px;
+  border-radius: 14px;
+  width: 380px;
+  box-shadow: 0 0 25px rgba(0, 100, 255, 0.25);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  text-align: center;
+}
+
+/* nadpis */
+h1 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #4aa3ff;
+  letter-spacing: 1px;
+}
+
+/* input */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #2c6fb2;
+  background: #0a1a2f;
+  color: white;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+/* tlačítko */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #1f6feb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #388bfd;
+}
+
+/* výsledek */
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  background: #0a1a2f;
+  border: 1px solid #2c6fb2;
+  border-radius: 8px;
+  word-break: break-all;
+  color: #4aa3ff;
+  font-weight: bold;
+}
+
+/* malý glow efekt */
+.glow {
+  text-shadow: 0 0 8px rgba(74,163,255,0.6);
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>Orbis Store</h1>
-        <p>Paste a GitHub or PKG link</p>
+<div class="card">
+  <h1 class="glow">ORBIS CODE GENERATOR</h1>
 
-        <input id="input" type="text" placeholder="Enter URL...">
-        <button onclick="generateCode()">Generate Code</button>
+  <input id="input" placeholder="Zadej PKG / GitHub URL">
+  <button onclick="generate()">GENERATE</button>
 
-        <div id="result"></div>
-    </div>
+  <div class="result" id="result">Waiting...</div>
+</div>
 
-    <script src="script.js"></script>
+<script>
+const API = "https://orbis-api.jsifta52.workers.dev";
+
+async function generate() {
+  const url = document.getElementById("input").value;
+  const result = document.getElementById("result");
+
+  result.innerHTML = "Generating...";
+
+  try {
+    const res = await fetch(API + "/create", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({url})
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      result.innerHTML = "CODE: " + data.code;
+    } else {
+      result.innerHTML = "ERROR: " + data.error;
+    }
+
+  } catch (e) {
+    result.innerHTML = "NETWORK ERROR";
+  }
+}
+</script>
+
 </body>
 </html>
