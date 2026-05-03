@@ -185,6 +185,55 @@ button:disabled { opacity: 0.5; cursor: default; }
 
 .icon:hover { background: #1f6feb; }
 .icon img { width: 20px; height: 20px; }
+
+/* AD BANNER */
+:root {
+  --ad-banner-height: 72px;
+  --z-index-ad-banner: 100;
+}
+
+body {
+  padding-bottom: var(--ad-banner-height);
+}
+
+.ad-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--ad-banner-height);
+  background: #071525;
+  border-top: 1px solid #2c6fb2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-ad-banner);
+}
+
+.ad-banner__inner {
+  width: min(980px, calc(100% - 16px));
+  height: calc(var(--ad-banner-height) - 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-slot {
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(74, 163, 255, 0.5);
+  border-radius: 10px;
+  color: #4aa3ff;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  :root { --ad-banner-height: 92px; }
+  .ad-slot { font-size: 12px; }
+}
 </style>
 </head>
 
@@ -331,6 +380,22 @@ function escHtml(s) {
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 </script>
+
+<!-- Sticky footer ad space -->
+<div class="ad-banner" role="complementary" aria-label="Advertisement">
+  <div class="ad-banner__inner">
+    <div id="index-monetag-ad-slot" class="ad-slot">
+      Ad space (Monetag)
+    </div>
+    <!-- Paste Monetag's provided script here -->
+    <!--
+    <script src="https://...monetag..."></script>
+    <script>
+      // Monetag init code...
+    </script>
+    -->
+  </div>
+</div>
 
 </body>
 </html>
