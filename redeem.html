@@ -5,14 +5,14 @@
 <title>Orbis Redeem</title>
 
 <style>
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #0a1a2f;
   color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  min-height: 100vh;
 }
 
 /* TOP BAR */
@@ -23,84 +23,143 @@ body {
   padding: 15px;
   background: #0f2a4a;
   border-bottom: 1px solid #2c6fb2;
-  width: 100%;
 }
 
 .tab {
-  padding: 10px 16px;
+  padding: 10px 20px;
   background: #1f6feb;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background 0.2s;
+  user-select: none;
 }
 
-.tab:hover {
-  background: #388bfd;
-}
+.tab:hover { background: #388bfd; }
+.tab.active { background: #388bfd; font-weight: bold; }
 
 /* CARD */
 .card {
-  margin-top: 80px;
   background: #0f2a4a;
   padding: 30px;
   border-radius: 14px;
-  width: 380px;
-  box-shadow: 0 0 25px rgba(0, 100, 255, 0.25);
-  border: 1px solid rgba(0, 150, 255, 0.3);
+  width: 420px;
+  max-width: 96vw;
+  margin: 60px auto 0;
   text-align: center;
+  border: 1px solid #2c6fb2;
+  box-shadow: 0 0 30px rgba(0,100,255,0.2);
 }
 
 h1 {
   font-size: 22px;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
   color: #4aa3ff;
   letter-spacing: 1px;
 }
 
-input {
+input, button {
   width: 100%;
-  box-sizing: border-box;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #2c6fb2;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+input {
   background: #0a1a2f;
+  border: 1px solid #2c6fb2;
   color: white;
   outline: none;
-  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-align: center;
+  font-weight: bold;
+}
+
+input::placeholder {
+  letter-spacing: 1px;
+  font-weight: normal;
+  color: #6688aa;
+  text-transform: none;
 }
 
 button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
   background: #1f6feb;
+  border: none;
   color: white;
-  font-size: 16px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: bold;
+  transition: background 0.2s;
 }
 
-button:hover {
-  background: #388bfd;
-}
+button:hover:not(:disabled) { background: #388bfd; }
+button:disabled { opacity: 0.5; cursor: default; }
 
-.result {
-  margin-top: 20px;
-  padding: 15px;
-  background: #0a1a2f;
+/* RESULT / STATUS */
+#result { margin-top: 6px; text-align: left; }
+
+/* APP METADATA CARD */
+.app-card {
+  background: #071525;
   border: 1px solid #2c6fb2;
-  border-radius: 8px;
-  word-break: break-all;
-  color: #4aa3ff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
 }
 
-/* FOOTER ICONS */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.app-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #1f2a40;
+  flex-shrink: 0;
+}
+
+.app-name { font-size: 18px; font-weight: bold; color: #fff; }
+.app-version { font-size: 13px; color: #4aa3ff; margin-top: 3px; }
+
+.app-desc {
+  font-size: 13px;
+  color: #99aacc;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  white-space: pre-line;
+}
+
+.app-pkg {
+  font-size: 11px;
+  color: #4466aa;
+  word-break: break-all;
+  padding: 8px;
+  background: #0a1a2f;
+  border-radius: 6px;
+  border: 1px solid #1a3a6a;
+}
+
+/* SUCCESS note */
+.saved-note {
+  color: #6abf88;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ERROR */
+.err { color: #f66; font-size: 14px; }
+
+/* FOOTER */
 .footer {
   display: flex;
   justify-content: center;
   gap: 14px;
-  margin-top: 40px;
+  margin: 40px 0 20px;
 }
 
 .icon {
@@ -112,19 +171,13 @@ button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: 0.2s;
+  transition: background 0.2s;
   cursor: pointer;
   text-decoration: none;
 }
 
-.icon:hover {
-  background: #1f6feb;
-}
-
-.icon img {
-  width: 20px;
-  height: 20px;
-}
+.icon:hover { background: #1f6feb; }
+.icon img { width: 20px; height: 20px; }
 </style>
 </head>
 
@@ -133,8 +186,8 @@ button:hover {
 <!-- TOP MENU -->
 <div class="topbar">
   <div class="tab" onclick="location.href='index.html'">Generator</div>
-  <div class="tab">Redeem</div>
-  <div class="tab" onclick="window.open('https://github.com')">GitHub</div>
+  <div class="tab active">Redeem</div>
+  <div class="tab" onclick="window.open('https://github.com/jsifta52-a11y/orbis-store','_blank')">GitHub</div>
   <div class="tab">Info</div>
 </div>
 
@@ -142,61 +195,96 @@ button:hover {
 <div class="card">
   <h1>REDEEM CODE</h1>
 
-  <input id="code" placeholder="Enter code">
-  <button onclick="redeem()">REDEEM</button>
+  <input id="code" placeholder="Enter 8-character code" maxlength="8" autocomplete="off" spellcheck="false"
+         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+  <button id="redeemBtn" onclick="redeem()">REDEEM</button>
 
-  <div class="result" id="result">Waiting...</div>
+  <div id="result"></div>
 </div>
 
 <!-- FOOTER ICONS -->
 <div class="footer">
-
   <a class="icon" href="https://twitter.com" target="_blank">
     <img src="https://cdn.simpleicons.org/x/ffffff" alt="X">
   </a>
-
   <a class="icon" href="https://discord.com" target="_blank">
     <img src="https://cdn.simpleicons.org/discord/ffffff" alt="Discord">
   </a>
-
-  <a class="icon" href="https://github.com" target="_blank">
+  <a class="icon" href="https://github.com/jsifta52-a11y/orbis-store" target="_blank">
     <img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub">
   </a>
-
-  <a class="icon" href="#">
-    <img src="https://cdn.simpleicons.org/info/ffffff" alt="Info">
-  </a>
-
 </div>
 
 <script>
 const API = "https://orbis-api.jsifta52.workers.dev";
 
-async function redeem() {
-  const code = document.getElementById("code").value;
-  const result = document.getElementById("result");
+function setResult(html) {
+  document.getElementById("result").innerHTML = html;
+}
 
-  result.innerHTML = "Loading...";
+function setBtn(text, disabled = false) {
+  const b = document.getElementById("redeemBtn");
+  b.textContent = text;
+  b.disabled = disabled;
+}
+
+async function redeem() {
+  const code = document.getElementById("code").value.trim().toUpperCase();
+  if (!code || code.length < 4) {
+    setResult('<p class="err">Please enter a valid redeem code.</p>');
+    return;
+  }
+
+  setBtn("Redeeming…", true);
+  setResult('<span style="color:#aac;font-size:14px">Looking up code…</span>');
 
   try {
-    const res = await fetch(API + "/redeem", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({code})
-    });
-
+    const res = await fetch(`${API}/api/redeem/${encodeURIComponent(code)}`);
     const data = await res.json();
 
-    if (data.success) {
-      result.innerHTML = "URL: " + data.url;
+    if (data.valid) {
+      showApp(data);
     } else {
-      result.innerHTML = "ERROR: " + data.error;
+      setResult(`<p class="err">ERROR: ${escHtml(data.error || "Invalid code")}</p>`);
     }
-
   } catch (e) {
-    result.innerHTML = "NETWORK ERROR";
+    setResult('<p class="err">NETWORK ERROR – check your connection.</p>');
+  } finally {
+    setBtn("REDEEM");
   }
 }
+
+function showApp(data) {
+  const iconHtml = data.icon_url
+    ? `<img class="app-icon" src="${escHtml(data.icon_url)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="app-icon"></div>`;
+
+  setResult(`
+    <div class="app-card">
+      <div class="app-header">
+        ${iconHtml}
+        <div>
+          <div class="app-name">${escHtml(data.name || "Unknown")}</div>
+          <div class="app-version">Version: ${escHtml(data.version || "—")}</div>
+        </div>
+      </div>
+      ${data.description ? `<div class="app-desc">${escHtml(data.description)}</div>` : ""}
+      ${data.pkg_url ? `<div class="app-pkg">PKG: ${escHtml(data.pkg_url)}</div>` : ""}
+    </div>
+    <p class="saved-note">✓ Code is valid. On your PS4, enter this code in the Redeem section to install.</p>
+  `);
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+// Allow pressing Enter to redeem
+document.getElementById("code").addEventListener("keydown", e => {
+  if (e.key === "Enter") redeem();
+});
 </script>
 
 </body>
