@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Orbis Redeem</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0a1a2f;
+  color: white;
+  min-height: 100vh;
+}
+
+/* TOP BAR */
+.topbar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px;
+  background: #0f2a4a;
+  border-bottom: 1px solid #2c6fb2;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: #1f6feb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.tab:hover { background: #388bfd; }
+.tab.active { background: #388bfd; font-weight: bold; }
+
+/* CARD */
+.card {
+  background: #0f2a4a;
+  padding: 30px;
+  border-radius: 14px;
+  width: 420px;
+  max-width: 96vw;
+  margin: 60px auto 0;
+  text-align: center;
+  border: 1px solid #2c6fb2;
+  box-shadow: 0 0 30px rgba(0,100,255,0.2);
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0 0 20px;
+  color: #4aa3ff;
+  letter-spacing: 1px;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+input {
+  background: #0a1a2f;
+  border: 1px solid #2c6fb2;
+  color: white;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-align: center;
+  font-weight: bold;
+}
+
+input::placeholder {
+  letter-spacing: 1px;
+  font-weight: normal;
+  color: #6688aa;
+  text-transform: none;
+}
+
+button {
+  background: #1f6feb;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+button:hover:not(:disabled) { background: #388bfd; }
+button:disabled { opacity: 0.5; cursor: default; }
+
+/* RESULT / STATUS */
+#result { margin-top: 6px; text-align: left; }
+
+/* APP METADATA CARD */
+.app-card {
+  background: #071525;
+  border: 1px solid #2c6fb2;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.app-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #1f2a40;
+  flex-shrink: 0;
+}
+
+.app-name { font-size: 18px; font-weight: bold; color: #fff; }
+.app-version { font-size: 13px; color: #4aa3ff; margin-top: 3px; }
+
+.app-desc {
+  font-size: 13px;
+  color: #99aacc;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  white-space: pre-line;
+}
+
+.app-pkg {
+  font-size: 11px;
+  color: #4466aa;
+  word-break: break-all;
+  padding: 8px;
+  background: #0a1a2f;
+  border-radius: 6px;
+  border: 1px solid #1a3a6a;
+}
+
+/* SUCCESS note */
+.saved-note {
+  color: #6abf88;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ERROR */
+.err { color: #f66; font-size: 14px; }
+
+/* FOOTER */
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 40px 0 20px;
+}
+
+.icon {
+  width: 42px;
+  height: 42px;
+  background: #0f2a4a;
+  border: 1px solid #2c6fb2;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.icon:hover { background: #1f6feb; }
+.icon img { width: 20px; height: 20px; }
+
+/* AD BANNER */
+:root {
+  --ad-banner-height: 72px;
+  --z-index-ad-banner: 100;
+}
+
+body {
+  padding-bottom: var(--ad-banner-height);
+}
+
+.ad-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--ad-banner-height);
+  background: #071525;
+  border-top: 1px solid #2c6fb2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-ad-banner);
+}
+
+.ad-banner__inner {
+  width: min(980px, calc(100% - 16px));
+  height: calc(var(--ad-banner-height) - 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-slot {
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(74, 163, 255, 0.5);
+  border-radius: 10px;
+  color: #4aa3ff;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  :root { --ad-banner-height: 92px; }
+  .ad-slot { font-size: 12px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP MENU -->
+<div class="topbar">
+  <div class="tab" onclick="location.href='index.html'">Generator</div>
+  <div class="tab active">Redeem</div>
+  <div class="tab" onclick="window.open('https://github.com/jsifta52-a11y/orbis-store','_blank')">GitHub</div>
+  <div class="tab">Info</div>
+</div>
+
+<!-- MAIN CARD -->
+<div class="card">
+  <h1>REDEEM CODE</h1>
+
+  <input id="code" placeholder="Enter 8-character code" maxlength="8" autocomplete="off" spellcheck="false"
+         aria-label="8-character alphanumeric redeem code (uppercase letters and digits only)"
+         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+  <button id="redeemBtn" onclick="redeem()">REDEEM</button>
+
+  <div id="result"></div>
+</div>
+
+<!-- FOOTER ICONS -->
+<div class="footer">
+  <a class="icon" href="https://twitter.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/x/ffffff" alt="X">
+  </a>
+  <a class="icon" href="https://discord.com" target="_blank">
+    <img src="https://cdn.simpleicons.org/discord/ffffff" alt="Discord">
+  </a>
+  <a class="icon" href="https://github.com/jsifta52-a11y/orbis-store" target="_blank">
+    <img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub">
+  </a>
+</div>
+
+<script>
+const API = "https://orbis-api.jsifta52.workers.dev";
+
+function setResult(html) {
+  document.getElementById("result").innerHTML = html;
+}
+
+function setBtn(text, disabled = false) {
+  const b = document.getElementById("redeemBtn");
+  b.textContent = text;
+  b.disabled = disabled;
+}
+
+async function redeem() {
+  const code = document.getElementById("code").value.trim().toUpperCase();
+  if (!code || code.length < 4) {
+    setResult('<p class="err">Please enter a valid redeem code.</p>');
+    return;
+  }
+
+  setBtn("Redeeming…", true);
+  setResult('<span style="color:#aac;font-size:14px">Looking up code…</span>');
+
+  try {
+    const res = await fetch(`${API}/api/redeem/${encodeURIComponent(code)}`);
+    const data = await res.json();
+
+    if (data.valid) {
+      showApp(data);
+    } else {
+      setResult(`<p class="err">ERROR: ${escHtml(data.error || "Invalid code")}</p>`);
+    }
+  } catch (e) {
+    setResult('<p class="err">NETWORK ERROR – check your connection.</p>');
+  } finally {
+    setBtn("REDEEM");
+  }
+}
+
+function showApp(data) {
+  const iconHtml = data.icon_url
+    ? `<img class="app-icon" src="${escHtml(data.icon_url)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="app-icon"></div>`;
+
+  setResult(`
+    <div class="app-card">
+      <div class="app-header">
+        ${iconHtml}
+        <div>
+          <div class="app-name">${escHtml(data.name || "Unknown")}</div>
+          <div class="app-version">Version: ${escHtml(data.version || "—")}</div>
+        </div>
+      </div>
+      ${data.description ? `<div class="app-desc">${escHtml(data.description)}</div>` : ""}
+      ${data.pkg_url ? `<div class="app-pkg">PKG: ${escHtml(data.pkg_url)}</div>` : ""}
+    </div>
+    <p class="saved-note">✓ Code is valid. On your PS4, enter this code in the Redeem section to install.</p>
+  `);
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+// Allow pressing Enter to redeem
+document.getElementById("code").addEventListener("keydown", e => {
+  if (e.key === "Enter") redeem();
+});
+</script>
+
+<!-- Sticky footer ad space -->
+<div class="ad-banner" role="complementary" aria-label="Advertisement">
+  <div class="ad-banner__inner">
+    <div id="redeem-monetag-ad-slot" class="ad-slot">
+      Ad space (Monetag)
+    </div>
+    <!-- Paste Monetag's provided script here -->
+    <!--
+    <script src="https://...monetag..."></script>
+    <script>
+      // Monetag init code...
+    </script>
+    -->
+  </div>
+</div>
+
+</body>
+</html>
