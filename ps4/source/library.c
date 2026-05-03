@@ -3,6 +3,8 @@
 #include "db.h"
 #include "installer.h"
 
+#include <time.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -181,9 +183,13 @@ void library_draw(LibraryState *s)
         ui_draw_rect(x, iy, w, UI_ITEM_H - 4, bg);
         ui_draw_rect_outline(x, iy, w, UI_ITEM_H - 4, border, 1);
 
+        char ts_buf[32] = "";
+        struct tm *tm_info = localtime(&e->added_at);
+        if (tm_info) strftime(ts_buf, sizeof(ts_buf), "%Y-%m-%d", tm_info);
+
         ui_draw_text(x + 16, iy + 8,  UI_COL_TEXT,     18, "%s", e->name);
         ui_draw_text(x + 16, iy + 32, UI_COL_TEXT_DIM,  14,
-                     "v%s  –  added %s", e->version, ctime(&e->added_at));
+                     "v%s  –  added %s", e->version, ts_buf);
     }
 
     /* Context menu overlay */

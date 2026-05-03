@@ -196,6 +196,7 @@ button:disabled { opacity: 0.5; cursor: default; }
   <h1>REDEEM CODE</h1>
 
   <input id="code" placeholder="Enter 8-character code" maxlength="8" autocomplete="off" spellcheck="false"
+         aria-label="8-character alphanumeric redeem code (uppercase letters and digits only)"
          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
   <button id="redeemBtn" onclick="redeem()">REDEEM</button>
 

@@ -128,6 +128,7 @@ int redeem_handle_input(RedeemSection *r, unsigned int buttons)
             if (r->osk.confirmed) {
                 /* Start the API call */
                 strncpy(r->code, r->osk.buffer, REDEEM_CODE_LEN);
+                r->code[REDEEM_CODE_LEN] = '\0';
                 start_api_call(r);
             } else if (r->osk.cancelled) {
                 /* Re-open the keyboard for a fresh attempt */

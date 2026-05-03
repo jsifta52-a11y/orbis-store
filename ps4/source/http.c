@@ -46,10 +46,12 @@ typedef struct {
 
 static int progress_cb_wrapper(void *clientp,
                                 curl_off_t dltotal, curl_off_t dlnow,
-                                curl_off_t /*ultotal*/, curl_off_t /*ulnow*/)
+                                curl_off_t ultotal, curl_off_t ulnow)
 {
     ProgressCtx *ctx = (ProgressCtx *)clientp;
     if (ctx->cb) ctx->cb((long)dlnow, (long)dltotal, ctx->userdata);
+    (void)ultotal;
+    (void)ulnow;
     return 0;
 }
 

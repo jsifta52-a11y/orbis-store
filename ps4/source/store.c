@@ -116,9 +116,11 @@ int store_handle_input(StoreState *s, unsigned int buttons)
 
         if (installer_begin(&entry) == 0) {
             /* Also add to library so it shows up there */
-            if (db_exists_by_url(entry.pkg_url) == 0) {
+            int exists = db_exists_by_url(entry.pkg_url);
+            if (exists == 0) {
                 db_insert(&entry);
             }
+            /* exists == -1 means DB error; install still proceeds */
         }
         return 1;
     }

@@ -300,7 +300,7 @@ function showSuccess(data) {
   setResult(`
     <div class="code-box">
       <span class="code-val">${escHtml(data.code)}</span>
-      <button class="copy-btn" onclick="copyCode('${escHtml(data.code)}')">Copy</button>
+      <button class="copy-btn" onclick="copyCode('${escHtml(data.code)}')" aria-label="Copy code ${escHtml(data.code)} to clipboard">Copy</button>
     </div>
     <div class="meta-card">
       <div class="meta-header">

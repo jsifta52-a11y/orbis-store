@@ -57,7 +57,8 @@ async function resolveGitHubRelease(rawUrl) {
 function resolveDirectPkg(rawUrl) {
   try {
     const u = new URL(rawUrl);
-    const filename = u.pathname.split('/').pop().replace(/\.pkg$/i, '') || 'Unknown';
+    const segment = u.pathname.split('/').filter(Boolean).pop() || '';
+    const filename = segment.replace(/\.pkg$/i, '') || 'Unknown';
     return {
       name: filename,
       version: '1.0.0',
@@ -83,10 +84,16 @@ async function handleCreate(request, env) {
     return jsonResponse({ success: false, error: 'url is required' }, 400);
   }
 
-  // Resolve metadata
+  // Resolve metadata – verify hostname to avoid path-confusion attacks
   let meta = null;
-  if (url.includes('github.com/') && url.includes('/releases')) {
-    meta = await resolveGitHubRelease(url.trim());
+  try {
+    const parsedUrl = new URL(url.trim());
+    if (parsedUrl.hostname === 'github.com' &&
+        parsedUrl.pathname.includes('/releases')) {
+      meta = await resolveGitHubRelease(url.trim());
+    }
+  } catch {
+    // Not a valid absolute URL or not GitHub – fall through to direct PKG handler
   }
   if (!meta) {
     meta = resolveDirectPkg(url.trim());

@@ -86,7 +86,9 @@ static const char *SECTION_NAMES[SECTION_COUNT] = {
     "Store", "Library", "Redeem", "Settings"
 };
 
-void ui_draw_topbar(AppSection current)
+/* Approximate pixel width of one character at size 20 – used for label centering */
+#define APPROX_CHAR_WIDTH_PX  12
+
 {
     /* Background bar */
     ui_draw_rect(0, 0, UI_SCREEN_W, UI_TOPBAR_H, UI_COL_PANEL);
@@ -104,7 +106,7 @@ void ui_draw_topbar(AppSection current)
 
         ui_draw_rect(tx, ty, tab_w, 44, bg);
         /* Centre the label */
-        int label_x = tx + (tab_w - (int)strlen(SECTION_NAMES[i]) * 12) / 2;
+        int label_x = tx + (tab_w - (int)strlen(SECTION_NAMES[i]) * APPROX_CHAR_WIDTH_PX) / 2;
         ui_draw_text(label_x, ty + 12, UI_COL_TEXT, 20, "%s", SECTION_NAMES[i]);
     }
 }
@@ -232,8 +234,8 @@ void osk_draw(const OskState *osk)
             ui_draw_rect(cx, ry, cell_w, cell_h, bg);
 
             char key[3] = { row[c], 0, 0 };
-            if (key[0] == '<') { key[0] = '<'; key[1] = 0; }
-            if (key[0] == '>') { key[0] = 'O'; key[1] = 'K'; }
+            if (key[0] == '<') { key[0] = '\x08'; key[1] = 0; }   /* backspace symbol */
+            if (key[0] == '>') { key[0] = 'O'; key[1] = 'K'; }    /* confirm */
 
             ui_draw_text(cx + (cell_w - 14) / 2, ry + 14, UI_COL_TEXT, 18, "%s", key);
         }
