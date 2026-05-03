@@ -5,13 +5,17 @@
 <title>Orbis Generator</title>
 
 <style>
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #0a1a2f;
   color: white;
+  min-height: 100vh;
 }
 
+/* TOP BAR */
 .topbar {
   display: flex;
   justify-content: center;
@@ -22,58 +26,147 @@ body {
 }
 
 .tab {
-  padding: 10px 16px;
+  padding: 10px 20px;
   background: #1f6feb;
   border-radius: 8px;
   cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
 }
 
+.tab:hover { background: #388bfd; }
+.tab.active { background: #388bfd; font-weight: bold; }
+
+/* CARD */
 .card {
   background: #0f2a4a;
   padding: 30px;
   border-radius: 14px;
-  width: 380px;
-  margin: 80px auto;
+  width: 420px;
+  max-width: 96vw;
+  margin: 60px auto 0;
   text-align: center;
   border: 1px solid #2c6fb2;
+  box-shadow: 0 0 30px rgba(0,100,255,0.2);
+}
+
+h2 {
+  margin: 0 0 20px;
+  font-size: 22px;
+  color: #4aa3ff;
+  letter-spacing: 1px;
 }
 
 input, select, button {
   width: 100%;
-  box-sizing: border-box;
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 10px;
+  font-size: 15px;
 }
 
 input, select {
   background: #0a1a2f;
   border: 1px solid #2c6fb2;
   color: white;
+  outline: none;
 }
+
+input::placeholder { color: #6688aa; }
 
 button {
   background: #1f6feb;
   border: none;
   color: white;
   cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
 }
 
-button:hover {
-  background: #388bfd;
-}
+button:hover:not(:disabled) { background: #388bfd; }
+button:disabled { opacity: 0.5; cursor: default; }
 
-.result {
+/* STATUS / RESULT */
+#result {
   margin-top: 10px;
+  text-align: left;
+  font-size: 14px;
   color: #4aa3ff;
+  word-break: break-all;
+  min-height: 24px;
 }
+
+/* CODE DISPLAY */
+.code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0a1a2f;
+  border: 1px solid #2c6fb2;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.code-val {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: #ffffff;
+}
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid #2c6fb2;
+  color: #4aa3ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  width: auto;
+  margin: 0;
+  transition: background 0.2s;
+}
+
+.copy-btn:hover { background: #1a3a6a; }
+
+/* METADATA CARD */
+.meta-card {
+  background: #071525;
+  border: 1px solid #2c6fb2;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.meta-card .meta-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.meta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #1f2a40;
+  flex-shrink: 0;
+}
+
+.meta-title { font-size: 16px; font-weight: bold; color: #fff; }
+.meta-version { font-size: 12px; color: #4aa3ff; margin-top: 2px; }
+.meta-desc { font-size: 13px; color: #aac; margin-top: 6px; line-height: 1.5; }
+.meta-pkg { font-size: 11px; color: #4466aa; margin-top: 8px; word-break: break-all; }
 
 /* FOOTER */
 .footer {
   display: flex;
   justify-content: center;
   gap: 14px;
-  margin-top: 40px;
+  margin: 40px 0 20px;
 }
 
 .icon {
@@ -85,34 +178,29 @@ button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: 0.2s;
+  transition: background 0.2s;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.icon:hover {
-  background: #1f6feb;
-}
-
-.icon img {
-  width: 20px;
-  height: 20px;
-}
+.icon:hover { background: #1f6feb; }
+.icon img { width: 20px; height: 20px; }
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-  <div class="tab">Generator</div>
+  <div class="tab active">Generator</div>
   <div class="tab" onclick="location.href='redeem.html'">Redeem</div>
-  <div class="tab" onclick="window.open('https://github.com')">GitHub</div>
-  <div class="tab">Info</div>
+  <div class="tab" onclick="window.open('https://github.com/jsifta52-a11y/orbis-store','_blank')">GitHub</div>
+  <div class="tab" id="infoTab">Info</div>
 </div>
 
 <div class="card">
   <h2>Code Generator</h2>
 
-  <input id="url" placeholder="Enter URL">
+  <input id="url" placeholder="GitHub Release URL or direct .pkg link" autocomplete="off" spellcheck="false">
 
   <select id="type">
     <option value="free">Free (24h)</option>
@@ -121,99 +209,128 @@ button:hover {
 
   <button id="mainBtn" onclick="handleAction()">Generate</button>
 
-  <div class="result" id="result">Waiting...</div>
+  <div id="result"></div>
 </div>
 
-<!-- SOCIAL ICONS -->
 <div class="footer">
-
   <a class="icon" href="https://twitter.com" target="_blank">
     <img src="https://cdn.simpleicons.org/x/ffffff" alt="X">
   </a>
-
   <a class="icon" href="https://discord.com" target="_blank">
     <img src="https://cdn.simpleicons.org/discord/ffffff" alt="Discord">
   </a>
-
-  <a class="icon" href="https://github.com" target="_blank">
+  <a class="icon" href="https://github.com/jsifta52-a11y/orbis-store" target="_blank">
     <img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub">
   </a>
-
-  <a class="icon" href="#">
-    <img src="https://cdn.simpleicons.org/info/ffffff" alt="Info">
-  </a>
-
 </div>
 
 <script>
 const API = "https://orbis-api.jsifta52.workers.dev";
-
 let adsWatched = 0;
 
-function resetAds() {
+document.getElementById("type").addEventListener("change", () => {
   adsWatched = 0;
-  document.getElementById("mainBtn").innerText = "Generate";
+  setBtn("Generate");
+});
+
+function setBtn(text, disabled = false) {
+  const b = document.getElementById("mainBtn");
+  b.textContent = text;
+  b.disabled = disabled;
 }
 
-document.getElementById("type").addEventListener("change", resetAds);
+function setResult(html) {
+  document.getElementById("result").innerHTML = html;
+}
 
 async function handleAction() {
   const type = document.getElementById("type").value;
-
-  if (type === "premium") {
-    return watchAds();
-  }
-
+  if (type === "premium") return watchAds();
   return generate("free");
 }
 
 function watchAds() {
-  const btn = document.getElementById("mainBtn");
-  const result = document.getElementById("result");
-
   adsWatched++;
-
-  result.innerText = `Watching ads ${adsWatched}/2`;
-  btn.innerText = `Watch Ads (${adsWatched}/2)`;
+  setResult(`<span style="color:#aac">Watching ad ${adsWatched}/2…</span>`);
+  setBtn(`Watch Ads (${adsWatched}/2)`);
 
   if (adsWatched >= 2) {
-    btn.innerText = "Generating...";
-
+    setBtn("Generating…", true);
     setTimeout(() => {
       adsWatched = 0;
-      btn.innerText = "Generate";
+      setBtn("Generate");
       generate("premium");
-    }, 800);
+    }, 900);
   }
 }
 
 async function generate(type) {
-  const url = document.getElementById("url").value;
-  const result = document.getElementById("result");
+  const url = document.getElementById("url").value.trim();
+  if (!url) { setResult('<span style="color:#f66">Please enter a URL.</span>'); return; }
 
-  result.innerHTML = "Generating...";
+  setBtn("Generating…", true);
+  setResult('<span style="color:#aac">Contacting server…</span>');
 
   try {
     const res = await fetch(API + "/create", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, type })
     });
 
     const data = await res.json();
 
     if (data.success) {
-      result.innerHTML = "CODE: " + data.code;
+      showSuccess(data);
     } else {
-      result.innerHTML = "ERROR: " + data.error;
+      setResult(`<span style="color:#f66">ERROR: ${escHtml(data.error || "Unknown error")}</span>`);
     }
-
   } catch (e) {
-    result.innerHTML = "NETWORK ERROR";
+    setResult('<span style="color:#f66">NETWORK ERROR – check your connection.</span>');
+  } finally {
+    setBtn("Generate");
   }
+}
+
+function showSuccess(data) {
+  const iconHtml = data.icon_url
+    ? `<img class="meta-icon" src="${escHtml(data.icon_url)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="meta-icon"></div>`;
+
+  setResult(`
+    <div class="code-box">
+      <span class="code-val">${escHtml(data.code)}</span>
+      <button class="copy-btn" onclick="copyCode('${escHtml(data.code)}')" aria-label="Copy code ${escHtml(data.code)} to clipboard">Copy</button>
+    </div>
+    <div class="meta-card">
+      <div class="meta-header">
+        ${iconHtml}
+        <div>
+          <div class="meta-title">${escHtml(data.name || "—")}</div>
+          <div class="meta-version">v${escHtml(data.version || "—")}</div>
+        </div>
+      </div>
+      ${data.description ? `<div class="meta-desc">${escHtml(data.description)}</div>` : ""}
+      ${data.pkg_url ? `<div class="meta-pkg">PKG: ${escHtml(data.pkg_url)}</div>` : ""}
+    </div>
+    <div style="color:#6a9;font-size:13px">✓ Code generated – share it with your PS4.</div>
+  `);
+}
+
+async function copyCode(code) {
+  try {
+    await navigator.clipboard.writeText(code);
+  } catch {
+    prompt("Copy this code:", code);
+  }
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 </script>
 
 </body>
-</html>
 </html>
