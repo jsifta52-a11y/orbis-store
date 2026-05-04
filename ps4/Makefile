@@ -39,15 +39,15 @@ CFLAGS  := \
     --target=x86_64-pc-freebsd12-elf \
     --sysroot=$(SYSROOT) \
     -nostdinc \
+    -isystem $(SYSROOT)/include \
+    -isystem $(SYSROOT)/include/c++/v1 \
     -fPIC \
     -funwind-tables \
     -fvisibility=hidden \
     -Wall \
     -Wextra \
     -D__PS4__ \
-    -D_BSD_SOURCE \
-    -isystem $(OO_TOOLCHAIN)/include \
-    -isystem $(OO_TOOLCHAIN)/include/c++/v1
+    -D_BSD_SOURCE
 
 LDFLAGS := \
     --target=x86_64-pc-freebsd12-elf \
