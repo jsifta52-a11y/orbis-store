@@ -23,11 +23,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.2
 
-      - name: Download OpenOrbis toolchain
+      - name: Download and extract OpenOrbis toolchain
         run: |
-          curl -L "$TOOLCHAIN_URL" -o toolchain.tar.gz
+          set -euo pipefail
+          curl -fsSL "$TOOLCHAIN_URL" -o toolchain.tar.gz
           mkdir -p "$TOOLCHAIN_DIR"
           tar -xzf toolchain.tar.gz -C "$TOOLCHAIN_DIR" --strip-components=1
+          test -f "$TOOLCHAIN_DIR/include/stddef.h"
+          test -f "$TOOLCHAIN_DIR/include/limits.h"
+          test -f "$TOOLCHAIN_DIR/include/c++/v1/stddef.h"
+          clang --target=x86_64-pc-freebsd12-elf --sysroot="$TOOLCHAIN_DIR" -nostdinc -isystem "$TOOLCHAIN_DIR/include" -E -x c - >/dev/null <<'EOF'
+          #include <stddef.h>
+          #include <limits.h>
+          EOF
           echo "OO_PS4_TOOLCHAIN=$TOOLCHAIN_DIR" >> "$GITHUB_ENV"
           echo "$TOOLCHAIN_DIR/bin" >> "$GITHUB_PATH"
 

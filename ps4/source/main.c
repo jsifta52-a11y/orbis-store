@@ -21,17 +21,25 @@
 #include <stdio.h>
 #include <string.h>
 
+/* PS4 SDK headers */
+#include <orbisPad.h>
+#include <orbisFile.h>
+#include <sceSystemService.h>
+
 /* ─────────────────────────────────────────────────────────────────────────
- * PS4 controller polling
- *
- * Replace the stub below with the real SDK call (e.g. scePadReadState).
- * Returns a bitmask of pressed buttons using the BTN_* constants from ui.h.
+ * PS4 controller polling with orbisPad
  * ───────────────────────────────────────────────────────────────────────── */
+
+static OrbisPadConfig g_padConfig;
 
 __attribute__((weak))
 unsigned int platform_read_buttons(void)
 {
-    return 0;   /* stub – override with real scePadReadState wrapper */
+    OrbisPadData padData;
+    if (orbisPadGetData(0, &padData) < 0)
+        return 0;
+    
+    return padData.buttons;   /* Direct button bitmask from pad */
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -131,15 +139,27 @@ static void handle_tab_input(AppState *app, unsigned int pressed)
 
 int main(void)
 {
+    /* ── Hide PS4 splash screen ── */
+    sceSystemServiceHideSplashScreen();
+    
+    /* ── Initialise controller ── */
+    orbisPadInit();
+    memset(&g_padConfig, 0, sizeof(g_padConfig));
+    g_padConfig.attr = ORBISPAD_ATTR_LIGHT_BAR;
+    g_padConfig.lightBarCtrl = ORBISPAD_LIGHT_BAR_OFF;
+    orbisPadSetConfig(&g_padConfig);
+
     /* ── Initialise subsystems ── */
     if (ui_init() != 0) {
         fprintf(stderr, "[orbis-store] Failed to initialise UI\n");
+        orbisPadFinish();
         return 1;
     }
 
     if (http_init() != 0) {
         fprintf(stderr, "[orbis-store] Failed to initialise HTTP\n");
         ui_shutdown();
+        orbisPadFinish();
         return 1;
     }
 
@@ -147,6 +167,7 @@ int main(void)
         fprintf(stderr, "[orbis-store] Failed to open library database\n");
         http_cleanup();
         ui_shutdown();
+        orbisPadFinish();
         return 1;
     }
 
@@ -208,5 +229,6 @@ int main(void)
     db_close();
     http_cleanup();
     ui_shutdown();
+    orbisPadFinish();
     return 0;
 }

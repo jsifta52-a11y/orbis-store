@@ -1,7 +1,8 @@
 #pragma once
 #include <time.h>
 
-#define LIBRARY_DB_PATH  "/data/orbis_store/library.db"
+/* PS4 application data sandbox path */
+#define LIBRARY_DB_PATH  "/user/app/NPXS39041/sce_sys/library.db"
 #define LIBRARY_NAME_MAX  128
 #define LIBRARY_VER_MAX    32
 #define LIBRARY_DESC_MAX  512
