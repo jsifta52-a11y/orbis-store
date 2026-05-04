@@ -107,4 +107,4 @@ $(PKG_OUT): $(OELF)
 
 clean:
 	rm -f $(OBJS) $(ELF) $(OELF) $(PKG_OUT)
-m -rf $(PKG_DIR)
+	rm -rf $(PKG_DIR)
