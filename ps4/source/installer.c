@@ -6,22 +6,64 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
+
+/* PS4 SDK headers */
+#include <sceAppInstUtil.h>
+#include <sceBgft.h>
+#include <orbisFile.h>
 
 /* ─────────────────────────────────────────────────────────────────────────
- * PS4 PKG installer service
+ * PS4 PKG installer via BGFT (Background File Transfer) service
  *
- * On a real PS4 homebrew build, trigger the package manager via:
- *   sceAppInstUtil / orbis_jbc_install_pkg / or a direct syscall.
- *
- * The stub below is replaced by the actual implementation for each SDK.
+ * Uses sceBgft API to download and install .pkg files via the PS4
+ * system package manager. This is the proper way to install apps
+ * on modern PS4 firmware versions.
  * ───────────────────────────────────────────────────────────────────────── */
 
 __attribute__((weak))
-int ps4_install_pkg(const char *pkg_path)
+int ps4_install_pkg(const char *pkg_url, int *out_task_id)
 {
-    /* Stub: on a real device this would call the PS4 package installer. */
-    printf("[installer] ps4_install_pkg(%s) – stub\n", pkg_path);
-    (void)pkg_path;
+    if (!pkg_url || !out_task_id) return -1;
+    
+    int rc;
+    SceBgftInitParams bgft_init;
+    
+    /* Initialize BGFT service */
+    memset(&bgft_init, 0, sizeof(bgft_init));
+    bgft_init.heap_size = 512 * 1024;  /* 512 KB heap */
+    bgft_init.app_id = "NPXS39041";     /* Orbis Store app ID */
+    
+    rc = sceBgftServiceInit(&bgft_init);
+    if (rc < 0) {
+        fprintf(stderr, "[installer] sceBgftServiceInit failed: 0x%08x\n", rc);
+        return -1;
+    }
+    
+    /* Register PKG download task */
+    SceBgftServiceIntDownloadRegisterTaskByStorageEx params;
+    memset(&params, 0, sizeof(params));
+    strncpy(params.url, pkg_url, sizeof(params.url) - 1);
+    params.option = 0;
+    params.flags = SCEBGFT_SERVICE_INTDOWNLOAD_FLAGS_NONOPT;
+    
+    int task_id = sceBgftServiceIntDownloadRegisterTaskByStorageEx(&params);
+    if (task_id < 0) {
+        fprintf(stderr, "[installer] sceBgftServiceIntDownloadRegisterTaskByStorageEx failed: 0x%08x\n", task_id);
+        sceBgftServiceTerm();
+        return -1;
+    }
+    
+    *out_task_id = task_id;
+    
+    /* Start the download */
+    rc = sceBgftServiceDownloadStartTask(task_id);
+    if (rc < 0) {
+        fprintf(stderr, "[installer] sceBgftServiceDownloadStartTask failed: 0x%08x\n", rc);
+        sceBgftServiceTerm();
+        return -1;
+    }
+    
     return 0;
 }
 
@@ -29,7 +71,7 @@ int ps4_install_pkg(const char *pkg_path)
  * Internal state (shared between the install thread and the main thread)
  * ───────────────────────────────────────────────────────────────────────── */
 
-#define TMP_PKG_PATH  "/data/orbis_store/tmp/download.pkg"
+#define TMP_PKG_PATH  "/user/app/NPXS39041/sce_sys/download.pkg"
 
 typedef struct {
     char pkg_url[512];
@@ -62,6 +104,7 @@ static void on_download_progress(long downloaded, long total, void *userdata)
 static void *install_thread(void *arg)
 {
     InstallArgs *args = (InstallArgs *)arg;
+    int task_id = -1;
 
     /* ── Download ── */
     pthread_mutex_lock(&g_mutex);
@@ -80,13 +123,13 @@ static void *install_thread(void *arg)
         return NULL;
     }
 
-    /* ── Install ── */
+    /* ── Install via BGFT ── */
     pthread_mutex_lock(&g_mutex);
-    g_progress.state   = INSTALL_INSTALLING;
+    g_progress.state = INSTALL_INSTALLING;
     g_progress.percent = 0;
     pthread_mutex_unlock(&g_mutex);
 
-    if (ps4_install_pkg(TMP_PKG_PATH) != 0) {
+    if (ps4_install_pkg(args->pkg_url, &task_id) != 0) {
         pthread_mutex_lock(&g_mutex);
         g_progress.state = INSTALL_ERROR;
         snprintf(g_progress.error_msg, sizeof(g_progress.error_msg),
@@ -97,13 +140,42 @@ static void *install_thread(void *arg)
         g_thread_running = 0;
         return NULL;
     }
+    
+    /* Monitor BGFT progress */
+    SceBgftServiceStatus status;
+    int attempts = 0;
+    const int max_attempts = 300;  /* ~5 min timeout at 1 update/sec */
+    
+    while (attempts < max_attempts) {
+        int rc = sceBgftServiceGetStatus(task_id, &status);
+        if (rc == 0) {
+            pthread_mutex_lock(&g_mutex);
+            g_progress.percent = (status.downloaded * 100) / (status.length > 0 ? status.length : 1);
+            g_progress.bytes_downloaded = status.downloaded;
+            g_progress.total_bytes = status.length;
+            
+            if (status.status == SCEBGFT_SERVICE_STATUS_COMPLETED) {
+                g_progress.state = INSTALL_DONE;
+                g_progress.percent = 100;
+                pthread_mutex_unlock(&g_mutex);
+                break;
+            }
+            pthread_mutex_unlock(&g_mutex);
+        }
+        sleep(1);
+        attempts++;
+    }
 
     remove(TMP_PKG_PATH);
+    sceBgftServiceTerm();
 
-    pthread_mutex_lock(&g_mutex);
-    g_progress.state   = INSTALL_DONE;
-    g_progress.percent = 100;
-    pthread_mutex_unlock(&g_mutex);
+    if (attempts >= max_attempts) {
+        pthread_mutex_lock(&g_mutex);
+        g_progress.state = INSTALL_ERROR;
+        snprintf(g_progress.error_msg, sizeof(g_progress.error_msg),
+                 "Installation timeout");
+        pthread_mutex_unlock(&g_mutex);
+    }
 
     free(args);
     g_thread_running = 0;

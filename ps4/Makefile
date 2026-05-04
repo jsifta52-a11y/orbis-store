@@ -28,6 +28,9 @@ SRCS := \
 # ── Toolchain ───────────────────────────────────────────────────────────────[...]
 
 OO_TOOLCHAIN ?= $(OO_PS4_TOOLCHAIN)
+ifeq ($(strip $(OO_TOOLCHAIN)),)
+$(error OO_PS4_TOOLCHAIN is not set; point it at the extracted OpenOrbis/PS4Toolchain root that contains include/stddef.h)
+endif
 SYSROOT := $(OO_TOOLCHAIN)
 
 CC      := clang
@@ -47,7 +50,8 @@ CFLAGS  := \
     -Wall \
     -Wextra \
     -D__PS4__ \
-    -D_BSD_SOURCE
+    -D_BSD_SOURCE \
+    -DORBIS_STORE_DATA_PATH\"/user/app/NPXS39041/"
 
 LDFLAGS := \
     --target=x86_64-pc-freebsd12-elf \
@@ -66,7 +70,12 @@ LDFLAGS := \
     -lSceUserService \
     -lScePad \
     -lSceSystemService \
-    -lSceVideoOut
+    -lSceVideoOut \
+    -lorbisGl \
+    -lorbisFile \
+    -lSceAppInstUtil \
+    -lSceBgft \
+    -lSceNet
 
 # ── Build ───────────────────────────────────────────────────────────────────
 
