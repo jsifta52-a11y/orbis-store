@@ -19,15 +19,16 @@ SRCS := \
     source/main.c      \
     source/http.c      \
     source/db.c        \
-    source/ui.c        \
+    source/ui.c      \
     source/store.c     \
     source/library.c   \
     source/redeem.c    \
     source/installer.c
 
-# ── Toolchain ────────────────────────────────────────────────────────────────
+# ── Toolchain ───────────────────────────────────────────────────────────────[...]
 
 OO_TOOLCHAIN ?= $(OO_PS4_TOOLCHAIN)
+SYSROOT := $(OO_TOOLCHAIN)
 
 CC      := clang
 LD      := clang
@@ -36,6 +37,8 @@ STRIP   := llvm-strip
 
 CFLAGS  := \
     --target=x86_64-pc-freebsd12-elf \
+    --sysroot=$(SYSROOT) \
+    -nostdinc \
     -fPIC \
     -funwind-tables \
     -fvisibility=hidden \
@@ -48,6 +51,7 @@ CFLAGS  := \
 
 LDFLAGS := \
     --target=x86_64-pc-freebsd12-elf \
+    --sysroot=$(SYSROOT) \
     -fPIC \
     -m elf_x86_64 \
     -pie \
@@ -64,7 +68,7 @@ LDFLAGS := \
     -lSceSystemService \
     -lSceVideoOut
 
-# ── Build ─────────────────────────────────────────────────────────────────────
+# ── Build ────────────────────────────────────────────────────────────�[...] 
 
 OBJS    := $(SRCS:.c=.o)
 ELF     := $(TARGET).elf
@@ -94,7 +98,7 @@ $(PKG_OUT): $(OELF)
 	cp $(OO_TOOLCHAIN)/assets/sce_sys/param.sfo.template $(PKG_DIR)/sce_sys/param.sfo
 	python3 $(OO_TOOLCHAIN)/scripts/patch_param_sfo.py \
 		$(PKG_DIR)/sce_sys/param.sfo \
-		$(TITLE_ID) "$(TARGET)" "$(VERSION)"
+		$(TITLE_ID) "$(TARGET)" "$(VERSION)" 
 	cp $(OELF) $(PKG_DIR)/eboot.bin
 	python3 $(OO_TOOLCHAIN)/scripts/create-pkg.py \
 		--title-id $(TITLE_ID) \
@@ -103,4 +107,4 @@ $(PKG_OUT): $(OELF)
 
 clean:
 	rm -f $(OBJS) $(ELF) $(OELF) $(PKG_OUT)
-	rm -rf $(PKG_DIR)
+m -rf $(PKG_DIR)
