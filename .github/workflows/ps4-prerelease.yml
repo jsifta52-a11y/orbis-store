@@ -1,0 +1,48 @@
+name: PS4 prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Prerelease tag to create/update"
+        required: false
+        default: "ps4-prerelease"
+
+permissions:
+  contents: write
+
+jobs:
+  build-ps4:
+    runs-on: ubuntu-latest
+    env:
+      TOOLCHAIN_URL: https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/download/v0.5.4/toolchain-llvm-18.tar.gz
+      TOOLCHAIN_DIR: ${{ github.workspace }}/openorbis-toolchain
+      PKG_PATH: ps4/OrbisStore.pkg
+      TAG_NAME: ${{ inputs.tag || 'ps4-prerelease' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Download OpenOrbis toolchain
+        run: |
+          curl -L "$TOOLCHAIN_URL" -o toolchain.tar.gz
+          mkdir -p "$TOOLCHAIN_DIR"
+          tar -xzf toolchain.tar.gz -C "$TOOLCHAIN_DIR" --strip-components=1
+          echo "OO_PS4_TOOLCHAIN=$TOOLCHAIN_DIR" >> "$GITHUB_ENV"
+          echo "$TOOLCHAIN_DIR/bin" >> "$GITHUB_PATH"
+
+      - name: Build PS4 PKG
+        run: make -C ps4
+
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$TAG_NAME" > /dev/null 2>&1; then
+            gh release delete "$TAG_NAME" --yes --cleanup-tag
+          fi
+          gh release create "$TAG_NAME" "$PKG_PATH" \
+            --title "Orbis Store PS4 ($TAG_NAME)" \
+            --notes "Automated prerelease build." \
+            --prerelease \
+            --target "$GITHUB_SHA"
