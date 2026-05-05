@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Orbis Store UI (Advanced)</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #0a2a6b, #000814);
+    color:white;
+    overflow:hidden;
+}
+
+/* TOP BAR */
+.topbar {
+    height:50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 20px;
+    background: rgba(0,0,0,0.4);
+    font-size:14px;
+}
+
+/* MAIN LAYOUT */
+.container {
+    display:flex;
+    height:calc(100vh - 50px);
+}
+
+/* LEFT LIST */
+.sidebar {
+    width:30%;
+    background: rgba(0,0,0,0.3);
+    padding:20px;
+    overflow:hidden;
+}
+
+.app {
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
+    transition:0.2s;
+}
+
+.app.active {
+    background: rgba(0,120,255,0.7);
+    transform: scale(1.05);
+}
+
+/* ICON */
+.icon {
+    width:50px;
+    height:50px;
+    background:rgba(255,255,255,0.2);
+    border-radius:8px;
+}
+
+/* RIGHT PANEL */
+.detail {
+    width:70%;
+    padding:40px;
+    position:relative;
+}
+
+.preview {
+    width:100%;
+    height:250px;
+    background:rgba(255,255,255,0.1);
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+.title {
+    font-size:34px;
+}
+
+.meta {
+    opacity:0.7;
+    margin:10px 0;
+}
+
+.button {
+    padding:15px 25px;
+    background:#0078ff;
+    border:none;
+    border-radius:8px;
+    margin-top:20px;
+    font-size:16px;
+}
+
+/* INSTALL OVERLAY */
+.overlay {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.9);
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+.progress {
+    width:300px;
+    height:20px;
+    background:#333;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.bar {
+    height:100%;
+    width:0%;
+    background:#0078ff;
+}
+
+/* SETTINGS PANEL */
+.settings {
+    position:absolute;
+    right:-400px;
+    top:0;
+    width:400px;
+    height:100%;
+    background:#111;
+    padding:20px;
+    transition:0.3s;
+}
+
+.settings.open {
+    right:0;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+    <div>Orbis Store</div>
+    <div id="time"></div>
+</div>
+
+<div class="container">
+
+```
+<div class="sidebar" id="list">
+    <div class="app active"> <div class="icon"></div> Homebrew App</div>
+    <div class="app"> <div class="icon"></div> Game Loader</div>
+    <div class="app"> <div class="icon"></div> Media Player</div>
+    <div class="app"> <div class="icon"></div> Emulator</div>
+</div>
+
+<div class="detail">
+    <div class="preview"></div>
+    <div class="title" id="title">Homebrew App</div>
+    <div class="meta">Version 1.0 • 120 MB</div>
+    <button class="button" onclick="install()">Install</button>
+
+    <!-- INSTALL SCREEN -->
+    <div class="overlay" id="overlay">
+        <h2>Installing...</h2>
+        <div class="progress"><div class="bar" id="bar"></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="settings" id="settings">
+        <h2>Settings</h2>
+        <p>Language</p>
+        <p>Theme</p>
+        <p>Network</p>
+    </div>
+</div>
+```
+
+</div>
+
+<script>
+let apps = document.querySelectorAll(".app");
+let index = 0;
+
+function updateFocus() {
+    apps.forEach(a => a.classList.remove("active"));
+    apps[index].classList.add("active");
+    document.getElementById("title").innerText = apps[index].innerText.trim();
+}
+
+/* KEYBOARD = GAMEPAD SIMULATION */
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown") {
+        index = (index + 1) % apps.length;
+        updateFocus();
+    }
+    if (e.key === "ArrowUp") {
+        index = (index - 1 + apps.length) % apps.length;
+        updateFocus();
+    }
+    if (e.key === "Enter") {
+        install();
+    }
+    if (e.key === "s") {
+        document.getElementById("settings").classList.toggle("open");
+    }
+});
+
+function install() {
+    let overlay = document.getElementById("overlay");
+    let bar = document.getElementById("bar");
+
+    overlay.style.display = "flex";
+    let progress = 0;
+
+    let interval = setInterval(() => {
+        progress += 5;
+        bar.style.width = progress + "%";
+
+        if (progress >= 100) {
+            clearInterval(interval);
+            overlay.style.display = "none";
+            alert("Installed!");
+        }
+    }, 100);
+}
+
+/* CLOCK */
+setInterval(() => {
+    let d = new Date();
+    document.getElementById("time").innerText =
+        d.getHours() + ":" + String(d.getMinutes()).padStart(2,'0');
+}, 1000);
+</script>
+
+</body>
+</html>
