@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbis Store – PS4 App Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            background: linear-gradient(135deg, #001a4d 0%, #003366 100%);
+            padding: 16px 32px;
+            border-bottom: 2px solid #0066cc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 80px;
+        }
+
+        .topbar-title {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .topbar-section {
+            font-size: 16px;
+            color: #66ccff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .section {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            padding: 20px 32px;
+            overflow-y: auto;
+        }
+
+        .section.active {
+            display: flex;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #66ccff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── STORE SECTION ── */
+        .store-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .store-item {
+            background: #1a1a2e;
+            border: 1px solid #0066cc;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .store-item:hover {
+            background: #252a4a;
+            border-color: #0099ff;
+            box-shadow: 0 0 16px rgba(0, 153, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .store-item-icon {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #0066cc 0%, #003366 100%);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: #66ccff;
+        }
+
+        .store-item-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #ffffff;
+        }
+
+        .store-item-version {
+            font-size: 12px;
+            color: #999999;
+            margin-bottom: 8px;
+        }
+
+        .store-item-desc {
+            font-size: 13px;
+            color: #cccccc;
+            flex: 1;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .store-item-button {
+            background: #0066cc;
+            border: none;
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .store-item-button:hover {
+            background: #0099ff;
+        }
+
+        .store-item-button:active {
+            background: #004499;
+        }
+
+        /* ── LIBRARY SECTION ── */
+        .library-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .library-item {
+            background: #1a1a2e;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .library-item:hover {
+            background: #252a4a;
+            border-color: #0099ff;
+        }
+
+        .library-item-info {
+            flex: 1;
+        }
+
+        .library-item-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .library-item-status {
+            font-size: 12px;
+            color: #66ccff;
+        }
+
+        .library-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            background: #004499;
+            border: 1px solid #0066cc;
+            color: #66ccff;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-action:hover {
+            background: #0066cc;
+            color: #ffffff;
+        }
+
+        /* ── REDEEM SECTION ── */
+        .redeem-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .redeem-input-group {
+            margin-bottom: 24px;
+        }
+
+        .redeem-label {
+            display: block;
+            font-size: 14px;
+            color: #66ccff;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .redeem-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a2e;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .redeem-input:focus {
+            outline: none;
+            border-color: #0099ff;
+            box-shadow: 0 0 12px rgba(0, 153, 255, 0.3);
+        }
+
+        .redeem-button {
+            background: #0066cc;
+            border: none;
+            color: #ffffff;
+            padding: 12px 32px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+        }
+
+        .redeem-button:hover {
+            background: #0099ff;
+        }
+
+        .redeem-button:active {
+            background: #004499;
+        }
+
+        .redeem-note {
+            margin-top: 16px;
+            padding: 12px;
+            background: #252a4a;
+            border-left: 3px solid #0066cc;
+            border-radius: 2px;
+            font-size: 12px;
+            color: #cccccc;
+            line-height: 1.5;
+        }
+
+        /* ── SETTINGS SECTION ── */
+        .settings-list {
+            max-width: 600px;
+        }
+
+        .settings-item {
+            background: #1a1a2e;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .settings-item:hover {
+            background: #252a4a;
+            border-color: #0099ff;
+        }
+
+        .settings-label {
+            font-size: 12px;
+            color: #66ccff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .settings-value {
+            font-size: 14px;
+            color: #ffffff;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        /* ── BOTTOM BAR ── */
+        .bottombar {
+            background: #1a1a2e;
+            border-top: 1px solid #0066cc;
+            padding: 12px 32px;
+            font-size: 12px;
+            color: #999999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+        }
+
+        .control-hint {
+            color: #66ccff;
+        }
+
+        /* ── TABS NAVIGATION ── */
+        .tabs {
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid #0066cc;
+            padding: 0 32px;
+            background: #0f0f1e;
+        }
+
+        .tab {
+            padding: 12px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            color: #99ccff;
+        }
+
+        .tab.active {
+            color: #00ccff;
+            border-bottom-color: #0099ff;
+        }
+
+        /* ── MODAL / NOTIFICATION ── */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #252a4a;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            padding: 16px 24px;
+            color: #66ccff;
+            font-size: 13px;
+            z-index: 1000;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ── SCROLLBAR ── */
+        .section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .section::-webkit-scrollbar-track {
+            background: #0f0f1e;
+        }
+
+        .section::-webkit-scrollbar-thumb {
+            background: #0066cc;
+            border-radius: 4px;
+        }
+
+        .section::-webkit-scrollbar-thumb:hover {
+            background: #0099ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="topbar-title">ORBIS STORE</div>
+            <div class="topbar-section" id="currentSection">Store</div>
+        </div>
+
+        <!-- TABS NAVIGATION -->
+        <div class="tabs">
+            <div class="tab active" data-section="store">📦 Store</div>
+            <div class="tab" data-section="library">📚 Library</div>
+            <div class="tab" data-section="redeem">🔑 Redeem</div>
+            <div class="tab" data-section="settings">⚙️ Settings</div>
+        </div>
+
+        <!-- CONTENT AREA -->
+        <div class="content-area">
+            <!-- STORE SECTION -->
+            <div class="section active" id="store">
+                <div class="section-title">Available Applications</div>
+                <div class="store-grid" id="storeGrid"></div>
+            </div>
+
+            <!-- LIBRARY SECTION -->
+            <div class="section" id="library">
+                <div class="section-title">My Library</div>
+                <div class="library-list" id="libraryList"></div>
+            </div>
+
+            <!-- REDEEM SECTION -->
+            <div class="section" id="redeem">
+                <div class="section-title">Redeem Code</div>
+                <div class="redeem-container">
+                    <div class="redeem-input-group">
+                        <label class="redeem-label">Enter 8-character code</label>
+                        <input type="text" class="redeem-input" id="redeemInput" maxlength="8" placeholder="XXXXXXXX">
+                    </div>
+                    <button class="redeem-button" onclick="redeemCode()">Redeem</button>
+                    <div class="redeem-note">
+                        ℹ️ Redeem codes unlock free and premium applications. Check official sources for valid codes.
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS SECTION -->
+            <div class="section" id="settings">
+                <div class="section-title">Settings</div>
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <div class="settings-label">API Endpoint</div>
+                        <div class="settings-value">https://orbis-api.jsifta52.workers.dev</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-label">Library Database</div>
+                        <div class="settings-value">/user/app/NPXS39041/sce_sys/library.db</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-label">Application Version</div>
+                        <div class="settings-value">1.0.0</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-label">Title ID</div>
+                        <div class="settings-value">ORBS00001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM BAR -->
+        <div class="bottombar">
+            <div>Orbis Store – Homebrew Application Manager</div>
+            <div class="controls">
+                <div><span class="control-hint">◀ / ▶</span> Navigate Tabs</div>
+                <div><span class="control-hint">↑ / ↓</span> Scroll</div>
+                <div><span class="control-hint">Enter</span> Select</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store catalog
+        const STORE_CATALOG = [
+            {
+                name: "GoldHEN",
+                version: "2.4b16.2",
+                desc: "PS4 exploit and homebrew enabler by SiSTRo.",
+                url: "https://github.com/GoldHEN/GoldHEN/releases/download/2.4b16.2/goldhen_2.4b16.2.pkg",
+                icon: "🔓",
+            },
+            {
+                name: "PKG Linker",
+                version: "1.6",
+                desc: "Install PKG files over the network from your PC.",
+                url: "https://github.com/flatz/pkg_sender/releases/download/v1.6/pkg_sender_v1.6.pkg",
+                icon: "🔗",
+            },
+            {
+                name: "PS4 Xplorer",
+                version: "1.1",
+                desc: "Full-featured file manager for PS4 internal and USB storage.",
+                url: "https://github.com/cy33hc/ps4-xplorer/releases/latest/download/PS4Xplorer.pkg",
+                icon: "📁",
+            },
+            {
+                name: "RetroArch",
+                version: "1.17",
+                desc: "Multi-system emulator frontend supporting 50+ cores.",
+                url: "https://buildbot.libretro.com/nightly/playstation/ps4/RetroArch.pkg",
+                icon: "🎮",
+            },
+            {
+                name: "OpenOrbis Toolchain",
+                version: "0.5.3",
+                desc: "Open-source PS4 homebrew development toolchain.",
+                url: "https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/latest/download/openorbis.pkg",
+                icon: "⚙️",
+            },
+        ];
+
+        // Library state (persistent across session)
+        let library = [];
+
+        // Initialization
+        function init() {
+            renderStore();
+            renderLibrary();
+            attachTabListeners();
+            attachKeyboardShortcuts();
+
+            // Simulate some pre-installed apps for demo
+            library = [
+                { name: "GoldHEN", version: "2.4b16.2", status: "Installed" },
+                { name: "PS4 Xplorer", version: "1.1", status: "Installed" },
+            ];
+            renderLibrary();
+        }
+
+        function renderStore() {
+            const grid = document.getElementById("storeGrid");
+            grid.innerHTML = "";
+            STORE_CATALOG.forEach((app, idx) => {
+                const item = document.createElement("div");
+                item.className = "store-item";
+                item.innerHTML = `
+                    <div class="store-item-icon">${app.icon}</div>
+                    <div class="store-item-name">${app.name}</div>
+                    <div class="store-item-version">v${app.version}</div>
+                    <div class="store-item-desc">${app.desc}</div>
+                    <button class="store-item-button" onclick="installApp('${app.name}', '${app.version}')">
+                        ${isInstalled(app.name) ? "Reinstall" : "Install"}
+                    </button>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function renderLibrary() {
+            const list = document.getElementById("libraryList");
+            list.innerHTML = "";
+            if (library.length === 0) {
+                list.innerHTML = '<div style="color: #666; padding: 32px; text-align: center;">No apps in library. Use Store or Redeem to install.</div>';
+                return;
+            }
+            library.forEach((app, idx) => {
+                const item = document.createElement("div");
+                item.className = "library-item";
+                item.innerHTML = `
+                    <div class="library-item-info">
+                        <div class="library-item-name">${app.name}</div>
+                        <div class="library-item-status">v${app.version} – ${app.status}</div>
+                    </div>
+                    <div class="library-item-actions">
+                        <button class="btn-action" onclick="openApp('${app.name}')">Open</button>
+                        <button class="btn-action" onclick="reinstallApp('${app.name}')">Reinstall</button>
+                        <button class="btn-action" onclick="deleteApp('${app.name}')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function isInstalled(name) {
+            return library.some(app => app.name === name);
+        }
+
+        function installApp(name, version) {
+            if (!isInstalled(name)) {
+                library.push({ name, version, status: "Installed" });
+                renderLibrary();
+                renderStore();
+                showNotification(`✓ ${name} added to Library`);
+            }
+        }
+
+        function reinstallApp(name) {
+            showNotification(`⟳ Reinstalling ${name}...`);
+            setTimeout(() => showNotification(`✓ ${name} reinstalled`), 2000);
+        }
+
+        function deleteApp(name) {
+            library = library.filter(app => app.name !== name);
+            renderLibrary();
+            renderStore();
+            showNotification(`✗ ${name} removed from Library`);
+        }
+
+        function openApp(name) {
+            showNotification(`▶ Launching ${name}... (feature unavailable in web)`);
+        }
+
+        function redeemCode() {
+            const input = document.getElementById("redeemInput");
+            const code = input.value.trim().toUpperCase();
+            if (!code) {
+                showNotification("⚠ Please enter a code");
+                return;
+            }
+            if (code.length !== 8) {
+                showNotification("⚠ Code must be 8 characters");
+                return;
+            }
+            showNotification(`⏳ Validating code: ${code}`);
+            setTimeout(() => {
+                showNotification(`✓ Code redeemed! Check Store for new apps.`);
+                input.value = "";
+            }, 1500);
+        }
+
+        function showNotification(msg) {
+            const notif = document.createElement("div");
+            notif.className = "notification";
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        function switchSection(section) {
+            // Hide all sections
+            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+            // Show target section
+            document.getElementById(section).classList.add("active");
+            // Update tabs
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            document.querySelector(`.tab[data-section="${section}"]`).classList.add("active");
+            // Update topbar
+            const sectionNames = { store: "Store", library: "Library", redeem: "Redeem", settings: "Settings" };
+            document.getElementById("currentSection").textContent = sectionNames[section];
+        }
+
+        function attachTabListeners() {
+            document.querySelectorAll(".tab").forEach(tab => {
+                tab.addEventListener("click", () => {
+                    const section = tab.dataset.section;
+                    switchSection(section);
+                });
+            });
+        }
+
+        function attachKeyboardShortcuts() {
+            document.addEventListener("keydown", (e) => {
+                const tabs = ["store", "library", "redeem", "settings"];
+                const current = document.querySelector(".tab.active").dataset.section;
+                const idx = tabs.indexOf(current);
+
+                if (e.key === "ArrowLeft") {
+                    const next = tabs[(idx - 1 + tabs.length) % tabs.length];
+                    switchSection(next);
+                } else if (e.key === "ArrowRight") {
+                    const next = tabs[(idx + 1) % tabs.length];
+                    switchSection(next);
+                }
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener("DOMContentLoaded", init);
+    </script>
+</body>
+</html>

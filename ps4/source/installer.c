@@ -1,17 +1,15 @@
 #include "installer.h"
-#include "http.h"
 #include "ui.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
 
 /* PS4 SDK headers */
-#include <sceAppInstUtil.h>
 #include <sceBgft.h>
-#include <orbisFile.h>
 
 /* ─────────────────────────────────────────────────────────────────────────
  * PS4 PKG installer via BGFT (Background File Transfer) service
@@ -25,53 +23,56 @@ __attribute__((weak))
 int ps4_install_pkg(const char *pkg_url, int *out_task_id)
 {
     if (!pkg_url || !out_task_id) return -1;
-    
+
     int rc;
-    SceBgftInitParams bgft_init;
-    
-    /* Initialize BGFT service */
+    static unsigned char bgft_heap[1024 * 1024];
+    OrbisBgftInitParams bgft_init;
+
     memset(&bgft_init, 0, sizeof(bgft_init));
-    bgft_init.heap_size = 512 * 1024;  /* 512 KB heap */
-    bgft_init.app_id = "NPXS39041";     /* Orbis Store app ID */
-    
-    rc = sceBgftServiceInit(&bgft_init);
+    bgft_init.heap = bgft_heap;
+    bgft_init.heapSize = sizeof(bgft_heap);
+
+    rc = sceBgftServiceIntInit(&bgft_init);
     if (rc < 0) {
-        fprintf(stderr, "[installer] sceBgftServiceInit failed: 0x%08x\n", rc);
+        fprintf(stderr, "[installer] sceBgftServiceIntInit failed: 0x%08x\n", rc);
         return -1;
     }
-    
-    /* Register PKG download task */
-    SceBgftServiceIntDownloadRegisterTaskByStorageEx params;
+
+    OrbisBgftDownloadParamEx params;
     memset(&params, 0, sizeof(params));
-    strncpy(params.url, pkg_url, sizeof(params.url) - 1);
-    params.option = 0;
-    params.flags = SCEBGFT_SERVICE_INTDOWNLOAD_FLAGS_NONOPT;
-    
-    int task_id = sceBgftServiceIntDownloadRegisterTaskByStorageEx(&params);
-    if (task_id < 0) {
-        fprintf(stderr, "[installer] sceBgftServiceIntDownloadRegisterTaskByStorageEx failed: 0x%08x\n", task_id);
-        sceBgftServiceTerm();
+    params.params.userId = 0;
+    params.params.entitlementType = 0;
+    params.params.id = "ORBS00001";
+    params.params.contentUrl = pkg_url;
+    params.params.contentName = "Orbis Store Package";
+    params.params.iconPath = "";
+    params.params.option = ORBIS_BGFT_TASK_OPT_NONE;
+    params.slot = 0;
+
+    OrbisBgftTaskId task_id = -1;
+    rc = sceBgftServiceIntDownloadRegisterTaskByStorageEx(&params, &task_id);
+    if (rc < 0 || task_id < 0) {
+        fprintf(stderr, "[installer] RegisterTask failed: 0x%08x\n", rc);
+        sceBgftServiceIntTerm();
         return -1;
     }
-    
+
     *out_task_id = task_id;
-    
+
     /* Start the download */
     rc = sceBgftServiceDownloadStartTask(task_id);
     if (rc < 0) {
         fprintf(stderr, "[installer] sceBgftServiceDownloadStartTask failed: 0x%08x\n", rc);
-        sceBgftServiceTerm();
+        sceBgftServiceIntTerm();
         return -1;
     }
-    
+
     return 0;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
  * Internal state (shared between the install thread and the main thread)
  * ───────────────────────────────────────────────────────────────────────── */
-
-#define TMP_PKG_PATH  "/user/app/NPXS39041/sce_sys/download.pkg"
 
 typedef struct {
     char pkg_url[512];
@@ -87,46 +88,14 @@ static pthread_mutex_t   g_mutex = PTHREAD_MUTEX_INITIALIZER;
  * Progress callback – called by http_download_file from the worker thread
  * ───────────────────────────────────────────────────────────────────────── */
 
-static void on_download_progress(long downloaded, long total, void *userdata)
-{
-    (void)userdata;
-    pthread_mutex_lock(&g_mutex);
-    g_progress.bytes_downloaded = downloaded;
-    g_progress.total_bytes      = total;
-    g_progress.percent          = (total > 0) ? (int)(downloaded * 100 / total) : 0;
-    pthread_mutex_unlock(&g_mutex);
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
- * Worker thread
- * ───────────────────────────────────────────────────────────────────────── */
-
 static void *install_thread(void *arg)
 {
     InstallArgs *args = (InstallArgs *)arg;
     int task_id = -1;
 
-    /* ── Download ── */
-    pthread_mutex_lock(&g_mutex);
-    g_progress.state = INSTALL_DOWNLOADING;
-    pthread_mutex_unlock(&g_mutex);
-
-    if (http_download_file(args->pkg_url, TMP_PKG_PATH,
-                           on_download_progress, NULL) != 0) {
-        pthread_mutex_lock(&g_mutex);
-        g_progress.state = INSTALL_ERROR;
-        snprintf(g_progress.error_msg, sizeof(g_progress.error_msg),
-                 "Download failed");
-        pthread_mutex_unlock(&g_mutex);
-        free(args);
-        g_thread_running = 0;
-        return NULL;
-    }
-
-    /* ── Install via BGFT ── */
+    /* ── BGFT install ── */
     pthread_mutex_lock(&g_mutex);
     g_progress.state = INSTALL_INSTALLING;
-    g_progress.percent = 0;
     pthread_mutex_unlock(&g_mutex);
 
     if (ps4_install_pkg(args->pkg_url, &task_id) != 0) {
@@ -135,26 +104,35 @@ static void *install_thread(void *arg)
         snprintf(g_progress.error_msg, sizeof(g_progress.error_msg),
                  "PKG installation failed");
         pthread_mutex_unlock(&g_mutex);
-        remove(TMP_PKG_PATH);
         free(args);
         g_thread_running = 0;
         return NULL;
     }
     
     /* Monitor BGFT progress */
-    SceBgftServiceStatus status;
+    OrbisBgftTaskProgress status;
+    memset(&status, 0, sizeof(status));
+
     int attempts = 0;
-    const int max_attempts = 300;  /* ~5 min timeout at 1 update/sec */
-    
+    const int max_attempts = 1800;  /* ~30 min timeout at 1 update/sec */
+
     while (attempts < max_attempts) {
-        int rc = sceBgftServiceGetStatus(task_id, &status);
+        if (!g_thread_running) {
+            sceBgftServiceDownloadStopTask(task_id);
+            pthread_mutex_lock(&g_mutex);
+            g_progress.state = INSTALL_IDLE;
+            pthread_mutex_unlock(&g_mutex);
+            break;
+        }
+
+        int rc = sceBgftServiceIntDownloadGetProgress(task_id, &status);
         if (rc == 0) {
             pthread_mutex_lock(&g_mutex);
-            g_progress.percent = (status.downloaded * 100) / (status.length > 0 ? status.length : 1);
-            g_progress.bytes_downloaded = status.downloaded;
-            g_progress.total_bytes = status.length;
-            
-            if (status.status == SCEBGFT_SERVICE_STATUS_COMPLETED) {
+            g_progress.percent = (status.transferredTotal * 100) / (status.lengthTotal > 0 ? status.lengthTotal : 1);
+            g_progress.bytes_downloaded = status.transferredTotal;
+            g_progress.total_bytes = status.lengthTotal;
+
+            if (status.lengthTotal > 0 && status.transferredTotal >= status.lengthTotal) {
                 g_progress.state = INSTALL_DONE;
                 g_progress.percent = 100;
                 pthread_mutex_unlock(&g_mutex);
@@ -166,8 +144,7 @@ static void *install_thread(void *arg)
         attempts++;
     }
 
-    remove(TMP_PKG_PATH);
-    sceBgftServiceTerm();
+    sceBgftServiceIntTerm();
 
     if (attempts >= max_attempts) {
         pthread_mutex_lock(&g_mutex);
@@ -221,7 +198,6 @@ void installer_cancel(void)
 {
     /* Signal the thread to stop and wait briefly */
     g_thread_running = 0;
-    remove(TMP_PKG_PATH);
     memset(&g_progress, 0, sizeof(g_progress));
 }
 

@@ -1,0 +1,33 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "intelliSenseMode": "linux-clang-x64",
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "includePath": [
+        "${workspaceFolder}/ps4/source",
+        "${workspaceFolder}/ps4",
+        "${env:OO_PS4_TOOLCHAIN}/include",
+        "${env:OO_PS4_TOOLCHAIN}/include/c++/v1",
+        "/home/neox/Downloads/OpenOrbis/PS4Toolchain/include",
+        "/home/neox/Downloads/OpenOrbis/PS4Toolchain/include/c++/v1"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/ps4/source",
+          "${workspaceFolder}/ps4",
+          "${env:OO_PS4_TOOLCHAIN}/include",
+          "/home/neox/Downloads/OpenOrbis/PS4Toolchain/include"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "defines": [
+        "__PS4__",
+        "_BSD_SOURCE"
+      ]
+    }
+  ],
+  "version": 4
+}
